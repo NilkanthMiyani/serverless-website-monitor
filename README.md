@@ -90,5 +90,3 @@ python -c "from handler import lambda_handler; print(lambda_handler({}, None))"
 - [src/alert.py](src/alert.py) — SNS alert sender
 - [infra/template.yaml](infra/template.yaml) — CloudFormation stack
 
-## License
-Add your preferred license (e.g., MIT) in a `LICENSE` file.
