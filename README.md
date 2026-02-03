@@ -2,12 +2,6 @@
 
 A lightweight, serverless monitoring stack that checks website uptime, latency, and SSL certificate expiry on a schedule, then sends alerts via SNS (email/SMS).
 
-## Suggested repo names
-- `serverless-website-monitor`
-- `aws-website-monitor`
-- `lambda-uptime-ssl-monitor`
-- `site-health-watchdog`
-
 ## Features
 - **HTTP uptime & latency checks** (per-site threshold)
 - **SSL expiry warnings** (30-day and 3-day alerts)
