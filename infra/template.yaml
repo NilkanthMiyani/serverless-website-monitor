@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Serverless Website Monitoring Stack.
+  Creates Lambda, EventBridge schedule, DynamoDB for state,
+  SNS for alerts (Email + optional SMS).
+  Lambda code is uploaded separately.
+
+# --------------------------------------------------
+# Parameters
+# --------------------------------------------------
+Parameters:
+  StackPrefix:
+    Type: String
+    Default: website-monitor
+    AllowedPattern: ^[a-zA-Z0-9-_]+$
+    Description: Prefix for all resource names
+
+  AlertEmail:
+    Type: String
+    Description: Email address to receive alerts
+
+  AlertPhoneNumber:
+    Type: String
+    Default: ""
+    Description: Optional SMS number in E.164 format (+919876543210)
+    AllowedPattern: ^$|^\+[1-9]\d{1,14}$
+
+  ScheduleRate:
+    Type: String
+    Default: rate(5 minutes)
+    Description: EventBridge schedule expression
+
+# --------------------------------------------------
+# Conditions
+# --------------------------------------------------
+Conditions:
+  HasSMS: !Not [!Equals [!Ref AlertPhoneNumber, ""]]
+
+# --------------------------------------------------
+# SNS (Alerts)
+# --------------------------------------------------
+Resources:
+
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${StackPrefix}-alerts"
+
+  EmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+      TopicArn: !Ref AlertTopic
+
+  SMSSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasSMS
+    Properties:
+      Protocol: sms
+      Endpoint: !Ref AlertPhoneNumber
+      TopicArn: !Ref AlertTopic
+
+# --------------------------------------------------
+# DynamoDB (State Store)
+# --------------------------------------------------
+  MonitorStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${StackPrefix}-state"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: site
+          AttributeType: S
+      KeySchema:
+        - AttributeName: site
+          KeyType: HASH
+
+# --------------------------------------------------
+# IAM Role for Lambda
+# --------------------------------------------------
+  MonitorLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${StackPrefix}-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: MonitorPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Ref AlertTopic
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                Resource: !GetAtt MonitorStateTable.Arn
+
+# --------------------------------------------------
+# Lambda Function (Code uploaded later)
+# --------------------------------------------------
+  MonitorLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${StackPrefix}-function"
+      Runtime: python3.12
+      Handler: handler.lambda_handler
+      Role: !GetAtt MonitorLambdaRole.Arn
+      Timeout: 15
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {"status": "upload code"}
+      Environment:
+        Variables:
+          DDB_TABLE: !Ref MonitorStateTable
+          SNS_TOPIC_ARN: !Ref AlertTopic
+
+# --------------------------------------------------
+# EventBridge Schedule
+# --------------------------------------------------
+  MonitorSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${StackPrefix}-schedule"
+      ScheduleExpression: !Ref ScheduleRate
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt MonitorLambda.Arn
+          Id: MonitorLambdaTarget
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref MonitorLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt MonitorSchedule.Arn
+
+# --------------------------------------------------
+# Outputs
+# --------------------------------------------------
+Outputs:
+  LambdaName:
+    Description: Lambda function name
+    Value: !Ref MonitorLambda
+
+  DynamoDBTable:
+    Description: DynamoDB table storing site state
+    Value: !Ref MonitorStateTable
+
+  SNSTopic:
+    Description: SNS topic for alerts
+    Value: !Ref AlertTopic

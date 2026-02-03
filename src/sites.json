@@ -1,0 +1,8 @@
+[
+  {
+    "site": "Main Website",
+    "url": "https://nilkanthprojects.site",
+    "domain": "nilkanthprojects.site",
+    "latency_threshold_ms": 2000
+  }
+]
