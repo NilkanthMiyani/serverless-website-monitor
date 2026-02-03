@@ -10,7 +10,7 @@ A lightweight, serverless monitoring stack that checks website uptime, latency, 
 - **Scheduled runs** using EventBridge
 
 ## Architecture
--![Architecture diagram](docs/architecture.png)
+![Architecture diagram](docs/architecture.png)
 
 - **Lambda** runs checks on a schedule
 - **DynamoDB** stores last known state per site
