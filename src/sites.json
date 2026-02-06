@@ -1,8 +1,21 @@
 [
-  {
-    "site": "Main Website",
-    "url": "https://nilkanthprojects.site",
-    "domain": "nilkanthprojects.site",
-    "latency_threshold_ms": 2000
-  }
-]
+    {
+      "site": "Coinwrap Reports",
+      "url": "https://reports.coinwrap1.com/",
+      "domain": "reports.coinwrap1.com",
+      "latency_threshold_ms": 2000
+    },
+    {
+      "site": "OTC Anywhere Dashboard",
+      "url": "https://dashboard.otcanywhere.com/login",
+      "domain": "dashboard.otcanywhere.com",
+      "latency_threshold_ms": 2000
+    },
+    {
+      "site": "SOSI Website",
+      "url": "https://www.sosi1.com/",
+      "domain": "www.sosi1.com",
+      "latency_threshold_ms": 2000
+    }
+  ]
+  

@@ -14,7 +14,9 @@ def save_state(site, http, ssl):
             "site": site,
             "status": http["status"],
             "latency": http["latency"],
+            "latency_high": http.get("latency_high"),
             "ssl_stage": ssl.get("stage"),
+            "ssl_last_alert": ssl.get("stage") if ssl.get("alert") else None,
             "last_checked": datetime.utcnow().isoformat()
         }
     )

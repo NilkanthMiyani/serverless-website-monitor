@@ -36,8 +36,16 @@ def lambda_handler(event, context):
                     "Website is back online"
                 )
 
-        # ----- SSL alerts -----
-        if ssl_result["alert"]:
+        # ----- Latency alert (only on first detection) -----
+        if http_result.get("latency_high") and not last.get("latency_high"):
+            send_alert(
+                "⚠️ HIGH LATENCY DETECTED",
+                site_name,
+                http_result["message"]
+            )
+
+        # ----- SSL alerts (only if stage changed) -----
+        if ssl_result["alert"] and last.get("ssl_last_alert") != ssl_result["stage"]:
             send_alert(
                 ssl_result["subject"],
                 site_name,

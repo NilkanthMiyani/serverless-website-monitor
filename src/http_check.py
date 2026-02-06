@@ -22,14 +22,16 @@ def check_http(site):
             return {
                 "status": "UP",
                 "latency": latency,
+                "latency_high": True,
                 "message": f"High latency: {latency} ms"
             }
 
-        return {"status": "UP", "latency": latency, "message": "OK"}
+        return {"status": "UP", "latency": latency, "latency_high": False, "message": "OK"}
 
     except (socket.timeout, Exception) as e:
         return {
             "status": "DOWN",
             "latency": None,
+            "latency_high": False,
             "message": str(e)
         }
