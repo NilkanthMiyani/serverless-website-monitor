@@ -1,7 +1,9 @@
 import ssl
 import socket
+import logging
 from datetime import datetime
 
+logger = logging.getLogger(__name__)
 WARN_30 = 30
 WARN_3 = 3
 
@@ -33,5 +35,6 @@ def check_ssl(site):
 
         return {"alert": False, "stage": "OK"}
 
-    except Exception:
+    except Exception as e:
+        logger.warning(f"SSL check failed for {site.get('domain', 'UNKNOWN')}: {type(e).__name__}: {e}")
         return {"alert": False, "stage": "UNKNOWN"}

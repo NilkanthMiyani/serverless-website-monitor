@@ -125,9 +125,9 @@ Resources:
       Environment:
         Variables:
           DDB_TABLE: !Ref MonitorStateTable
+          METRICS_TABLE: !Ref MetricsTable
           SNS_TOPIC_ARN: !Ref AlertTopic
-
-# --------------------------------------------------
+------------------------------------------
 # EventBridge Schedule
 # --------------------------------------------------
   MonitorSchedule:
@@ -160,6 +160,6 @@ Outputs:
     Description: DynamoDB table storing site state
     Value: !Ref MonitorStateTable
 
-  SNSTopic:
+  MetricsTable:
     Description: SNS topic for alerts
     Value: !Ref AlertTopic
